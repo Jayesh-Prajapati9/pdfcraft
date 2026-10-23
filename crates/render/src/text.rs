@@ -2252,6 +2252,31 @@ mod tests {
         Pdf::new(std::sync::Arc::new(out)).unwrap()
     }
 
+    /// #3660: a sequence's MCID may sit in a property list named in the resources' `/Properties`
+    /// (ISO 32000-2 §14.6.2) rather than inline; it indexes the parent tree, and a filter's
+    /// MCIDs, all the same.
+    #[test]
+    fn structure_replacement_text_reads_named_property_lists() {
+        let page = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 300] /StructParents 0 /Contents 4 0 R \
+                    /Resources << /Font << /F1 6 0 R >> /Properties << /MC0 << /MCID 0 >> /MC1 << /MCID 1 >> >> >> >>";
+        let content = "/Span /MC0 BDC BT /F1 20 Tf 1 0 0 1 50 150 Tm (appointroP.nt) Tj ET EMC \
+                       /P /MC1 BDC BT /F1 20 Tf 1 0 0 1 50 100 Tm (kept) Tj ET EMC";
+        let pdf = tagged(
+            content,
+            "",
+            "<< /Nums [0 [10 0 R 11 0 R]] >>",
+            &[
+                (3, page),
+                (10, "<< /Type /StructElem /S /Span /P 5 0 R /K 0 /ActualText (appointment) >>"),
+                (11, "<< /Type /StructElem /S /P /P 5 0 R /K 1 >>"),
+            ],
+        );
+        assert_eq!(marked_text(&pdf, 0).plain_text(), "appointment\nkept");
+        let filter = TextFilter { mcids: HashSet::from([1]), ..TextFilter::default() };
+        let counted = extract_page_filtered(&pdf, 0, &InterpreterSettings::default(), filter).unwrap();
+        assert_eq!(counted.plain_text(), "appointment");
+    }
+
     /// #3660: replacement text given on a structure element (ISO 32000-2 §14.9.4) replaces the
     /// content it encloses, found through the page's `/StructParents` entry in the parent tree. An
     /// OCR layer's misread words are tagged this way with the right ones.
