@@ -113,7 +113,7 @@ impl Filter {
             }
             #[cfg(feature = "images")]
             Self::CcittFaxDecode => {
-                ccitt::decode(data, params, image_params).ok_or(DecodeFailure::ImageDecode)
+                ccitt::decode(data, params, image_params, limit).ok_or(DecodeFailure::ImageDecode)
             }
             #[cfg(feature = "images")]
             Self::Jbig2Decode => {

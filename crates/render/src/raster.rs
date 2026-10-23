@@ -4285,6 +4285,53 @@ endstream endobj
         assert!(dark_fraction(&page) > 0.99, "{} of the page is dark", dark_fraction(&page));
     }
 
+    /// #4071: the CCITT filter decodes no more rows than the image's `/Height`, however many
+    /// `/Rows` says, and refuses a packed image whose samples would pass 512 MiB. A
+    /// 1-pixel-wide image is a byte a row packed: `/Rows` 2^30 on a 2^29-row image, or a 2^30-row
+    /// image, made 1 GiB. An image whose `/Columns` differs from its `/Width` is still decoded,
+    /// byte a pixel or packed, and a stream of unknown height stops at the limit it is decoded
+    /// within. The Group 4
+    /// fixtures are all-white rows (one V0 bit each) and EOFB; the Group 3 one is 7-pixel
+    /// all-white rows (white run 7 is `1111`).
+    #[test]
+    fn ccitt_rows_stop_at_the_height_and_output_within_its_limits() {
+        use hayro::hayro_syntax::object::stream::{ImageDecodeParams, Stream};
+
+        fn stream_of(pdf: &Pdf) -> Stream<'_> {
+            pdf.objects().into_iter().filter_map(|object| object.into_stream()).find(|stream| !stream.filters().is_empty()).unwrap()
+        }
+        let decode = |width: u32, height: u32, parms: &str, is_indexed: bool, coded_rows: usize| {
+            let mut data = vec![0xff; coded_rows / 8];
+            data.extend_from_slice(&[0x00, 0x10, 0x01]); // EOFB
+            let dict = format!("/ColorSpace /DeviceGray /BitsPerComponent 1 /Filter /CCITTFaxDecode /DecodeParms << /K -1 {parms} >>");
+            let pdf = Pdf::new(Arc::new(large_scan_pdf(width, height, &dict, &data))).unwrap();
+            let params = ImageDecodeParams { is_indexed, bpc: Some(1), num_components: Some(1), width, height, ..Default::default() };
+            stream_of(&pdf).decoded_image(&params).map(|decoded| decoded.data.len())
+        };
+        // 16 rows coded, 4 drawn: a byte a pixel (8 × 4), or packed (a byte a row).
+        assert_eq!(decode(8, 4, "/Columns 8 /Rows 100", false, 16).ok(), Some(32));
+        assert_eq!(decode(8, 4, "/Columns 8 /Rows 100", true, 16).ok(), Some(4));
+        // Past 2^28 pixels, packed: 2^29 rows of a byte each is 512 MiB, the most taken.
+        assert_eq!(decode(1, 1 << 29, "/Columns 1 /Rows 1073741824", false, 64).ok(), Some(64));
+        assert!(decode(1, 1 << 30, "/Columns 1 /Rows 1073741824", false, 64).is_err(), "1 GiB of samples is refused");
+        assert!(decode(1, (1 << 29) + 1, "/Columns 1", false, 64).is_err(), "past 512 MiB packed is refused");
+        // `/Columns` absent is 1728, wider than `/Width 100`: drawn as before, a byte a pixel.
+        assert_eq!(decode(100, 100, "", false, 104).ok(), Some(1728 * 100));
+        // Packed with `/Columns` padded past `/Width`: drawn as before, 2050 bytes a row.
+        assert_eq!(decode(16384, 16385, "/Columns 16400", false, 64).ok(), Some(2050 * 64));
+
+        // Group 3 with no height decodes until the data ends (2000 rows here) or `/Rows`: either
+        // way no more than the limit it is decoded within.
+        for rows in ["", "/Rows 2000"] {
+            let dict = format!("/Filter /CCITTFaxDecode /DecodeParms << /K 0 /Columns 7 {rows} >>");
+            let pdf = Pdf::new(Arc::new(large_scan_pdf(7, 1, &dict, &[0xff; 1000]))).unwrap();
+            for max in [64, 7000] {
+                let len = stream_of(&pdf).decoded_within(max).map(|data| data.len());
+                assert!(len.as_ref().is_ok_and(|&len| len > 0 && len <= max), "{rows:?} within {max}: {len:?}");
+            }
+        }
+    }
+
     /// #4071: the tiles of a page share one reduced decode of a large image: the size it is
     /// decoded for is the size it is drawn at, which no longer counts each tile's offset.
     #[test]
