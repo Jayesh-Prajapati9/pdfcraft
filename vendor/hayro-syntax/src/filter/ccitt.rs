@@ -50,8 +50,13 @@ pub(crate) fn decode(
     // Whenever possible (if we don't have an indexed color space), we convert
     // the data as 8-bit instead of 1-bit, so that it can be easier converted
     // into an RGBA8 image.
+    // PdfCraft patch (hayro-interpret 52): an image over 2^28 pixels stays 1-bit: hayro-interpret
+    // reduces it from its packed samples, and a byte per pixel took 311 MB for a 21600 × 14400
+    // scan (#4071).
+    let packed = image_params.is_indexed
+        || u64::from(settings.columns) * u64::from(settings.rows) > super::MAX_FULL_IMAGE_PIXELS;
 
-    let (decoded, bpc) = if image_params.is_indexed {
+    let (decoded, bpc) = if packed {
         struct BitPackDecoder {
             output: Vec<u8>,
             decoded_rows: u32,
