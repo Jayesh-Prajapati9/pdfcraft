@@ -707,7 +707,7 @@ fn interpret_window<'a>(
                 // 1. A Name that references an entry in the Resources/Properties dictionary
                 // 2. An inline dictionary with an OC key
 
-                // PdfCraft patch (51): the property list, inline or named in the resources'
+                // PdfCraft patch (53): the property list, inline or named in the resources'
                 // `/Properties` (ISO 32000-2 §14.6.2), read once for its MCID and `/ActualText`.
                 let props = dict_or_stream(bdc.1).map(|(props, _)| props.clone()).or_else(|| {
                     let name = bdc.1.clone().into_name()?;
@@ -742,7 +742,7 @@ fn interpret_window<'a>(
 
                 device.begin_marked_content(bdc.0, mcid);
 
-                // PdfCraft patch (51): every nested content stream (forms, annotation appearances,
+                // PdfCraft patch (53): every nested content stream (forms, annotation appearances,
                 // soft masks, patterns, Type 3 glyphs) runs at a nesting depth above 0.
                 if let Some(mcid) = mcid
                     && context.nesting_depth() == 0
