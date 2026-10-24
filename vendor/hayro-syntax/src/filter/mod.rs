@@ -156,7 +156,7 @@ const MAX_DECODED_IMAGE: u64 = 1 << 30;
 /// everything else gets [`MAX_DECODED_STREAM`]. Decoding stops at the limit and keeps what it
 /// has.
 ///
-/// PdfCraft patch (hayro-interpret 52): an image over [`MAX_FULL_IMAGE_PIXELS`], which
+/// PdfCraft patch (hayro-interpret 54): an image over [`MAX_FULL_IMAGE_PIXELS`], which
 /// hayro-interpret decodes reduced from samples of up to 512 MiB, gets its pixels plus one PNG
 /// predictor tag byte per row (rows `/Width` long; a predictor with shorter `/Columns` is cut
 /// short there): twice its pixels let a 23170 × 23170 gray stream inflating past its size reach
@@ -182,7 +182,7 @@ pub(crate) fn decode_limit(params: &ImageDecodeParams, last: bool) -> usize {
 
 /// PdfCraft patch: whether a CCITT image of `columns` × `rows` may be decoded. The decoder sizes
 /// its line buffers from `/Columns`, which a fuzzed file set to 4294967295 (a 4 GiB allocation);
-/// real fax lines are a few thousand pixels wide. PdfCraft patch (hayro-interpret 52): up to 2^30
+/// real fax lines are a few thousand pixels wide. PdfCraft patch (hayro-interpret 54): up to 2^30
 /// pixels, the most hayro-interpret decodes (at a reduced size past [`MAX_FULL_IMAGE_PIXELS`]):
 /// large-format drawings scanned at 600 dpi pass 2^28 (#4071).
 pub fn ccitt_size_ok(columns: u32, rows: u32) -> bool {
@@ -191,6 +191,6 @@ pub fn ccitt_size_ok(columns: u32, rows: u32) -> bool {
     columns > 0 && columns <= MAX_COLUMNS && u64::from(columns) * u64::from(rows.max(1)) <= MAX_PIXELS
 }
 
-/// PdfCraft patch (hayro-interpret 52): the most pixels an image is decoded with at its full
+/// PdfCraft patch (hayro-interpret 54): the most pixels an image is decoded with at its full
 /// size; a CCITT image larger than this keeps its samples packed (see `ccitt::decode`).
 pub(crate) const MAX_FULL_IMAGE_PIXELS: u64 = 1 << 28;

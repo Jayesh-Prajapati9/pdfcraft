@@ -766,7 +766,7 @@ impl Renderer {
     /// `transform`, or `None` if `draw_image` skips it: off the canvas (PdfCraft patch: see
     /// `may_paint_rect`; checked before decoding, so a tile no longer decodes every image on its
     /// page), or, in a preview, covering only a few device pixels (PdfCraft patch; final renders
-    /// always draw them). PdfCraft patch (hayro-interpret 52): the size is the lengths of the
+    /// always draw them). PdfCraft patch (hayro-interpret 54): the size is the lengths of the
     /// image's axes on the device. It mapped the far corner of each axis as a point, translation
     /// included, so the tiles of a page asked for the same image at sizes that differed by
     /// their offsets, and an image too large for its full size, decoded reduced for that size,

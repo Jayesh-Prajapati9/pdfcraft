@@ -521,7 +521,7 @@ impl<'a> ImageXObject<'a> {
             } else {
                 None
             },
-            // PdfCraft patch (52): an image too large for its full size is decoded reduced for
+            // PdfCraft patch (54): an image too large for its full size is decoded reduced for
             // the size it is drawn at, and so is a soft mask or mask decoded with it: keyed by
             // their factors rather than the size, so sizes that reduce alike share one decode.
             reduction: self.reduction_key(target_dimension),
@@ -530,7 +530,7 @@ impl<'a> ImageXObject<'a> {
         })
     }
 
-    /// PdfCraft patch (52): the factors this image is reduced by for `target`, as the cache keys
+    /// PdfCraft patch (54): the factors this image is reduced by for `target`, as the cache keys
     /// them: from its dictionary's `/Width` and `/Height`, `None` when it isn't too large for its
     /// full size. `decode_context` reduces by at least these.
     fn reduction_key(&self, target: Option<(u32, u32)>) -> Option<(u32, u32)> {
@@ -538,7 +538,7 @@ impl<'a> ImageXObject<'a> {
             .then(|| self.reduction_factors(self.width, self.height, target))
     }
 
-    /// PdfCraft patch (52): [`Self::reduction_key`] of the `/SMask` or `/Mask` stream
+    /// PdfCraft patch (54): [`Self::reduction_key`] of the `/SMask` or `/Mask` stream
     /// `resolve_alpha` and `resolve_matte` decode with this image at the same target.
     fn mask_reduction_key(&self, target: Option<(u32, u32)>) -> Option<(u32, u32)> {
         let dict = self.stream.dict();
@@ -570,7 +570,7 @@ impl<'a> ImageXObject<'a> {
             || dict.get::<Stream<'_>>(MASK).is_some_and(|s| uses_jpx(&s))
     }
 
-    /// PdfCraft patch (52): the components and bits per component of the image's samples as
+    /// PdfCraft patch (54): the components and bits per component of the image's samples as
     /// its dictionary gives them (a mask has one component; an image without a colour space is
     /// taken to have four, the most a JPX or DCT image decodes to).
     fn sample_format(&self) -> (u8, u8) {
@@ -589,7 +589,7 @@ impl<'a> ImageXObject<'a> {
         (components, bpc)
     }
 
-    /// PdfCraft patch (52): how a reduced decode makes a pixel of a block: palette indices and
+    /// PdfCraft patch (54): how a reduced decode makes a pixel of a block: palette indices and
     /// samples a colour key mask compares can't be averaged, so those take one pixel of it.
     fn sampling(&self) -> Sampling {
         let indexed = self
@@ -603,7 +603,7 @@ impl<'a> ImageXObject<'a> {
         }
     }
 
-    /// PdfCraft patch (52): the factors a decoded image of `width` × `height` samples is
+    /// PdfCraft patch (54): the factors a decoded image of `width` × `height` samples is
     /// reduced by to be drawn at `target` (see `reduce::factors`), budgeted by the bytes a pixel
     /// takes once reduced and once converted for drawing.
     fn reduction_factors(
@@ -708,7 +708,7 @@ fn decode_context<'a>(
     target_dimension: Option<(u32, u32)>,
 ) -> Option<DecodeContext<'a>> {
     // PdfCraft patch: images and masks over `reduce::MAX_SOURCE_PIXELS` are not decoded at all:
-    // a fuzzed `/W 4294967295` stencil mask allocated gigabytes here. PdfCraft patch (52): nor
+    // a fuzzed `/W 4294967295` stencil mask allocated gigabytes here. PdfCraft patch (54): nor
     // are those too large for their full size whose samples would take more than
     // `reduce::MAX_SOURCE_BYTES` (checked again on what the filters report once decoded).
     let over_full_size = reduce::is_over_full_size(obj.width, obj.height);
@@ -770,7 +770,7 @@ fn decode_context<'a>(
         .or(dict_bpc)
         .unwrap_or(fallback_bpc);
 
-    // PdfCraft patch (52): samples too many to draw at full size are reduced here, packed as the
+    // PdfCraft patch (54): samples too many to draw at full size are reduced here, packed as the
     // filters produced them, before anything expands them (see `reduce`). The reduced image
     // reports its size as a JPX image decoded at a lower resolution does, so it is drawn over
     // the same rectangle.
@@ -1039,7 +1039,7 @@ fn decode_raster(
     } else if let Some((alpha, _)) = matte
         && !smask_in_data
     {
-        // PdfCraft patch (52): a matted soft mask of another size than the image (one of them
+        // PdfCraft patch (54): a matted soft mask of another size than the image (one of them
         // reduced, say) is the alpha `resolve_alpha` would decode again: keep this decode.
         Some(alpha)
     } else {
@@ -1483,7 +1483,7 @@ fn convert_each(cs: &ColorSpace, input: &[f32], n: usize, output: &mut [u8]) {
 
 /// PdfCraft patch: whether an image or mask of `width` × `height` may be decoded at all. Up to
 /// 2^28 pixels (the renderer's `MAX_IMAGE_PIXELS`) it is decoded at its full size; PdfCraft
-/// patch (52): past that, up to 2^30 pixels, at a reduced one (see `reduce`), when its samples
+/// patch (54): past that, up to 2^30 pixels, at a reduced one (see `reduce`), when its samples
 /// fit `reduce::MAX_SOURCE_BYTES`.
 pub fn image_size_ok(width: u32, height: u32) -> bool {
     width > 0 && height > 0 && u64::from(width) * u64::from(height) <= reduce::MAX_SOURCE_PIXELS

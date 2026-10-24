@@ -85,7 +85,7 @@ impl<'a> RenderCache<'a> {
         }
     }
 
-    /// PdfCraft patch (hayro-interpret 52): how many images were decoded through this cache
+    /// PdfCraft patch (hayro-interpret 54): how many images were decoded through this cache
     /// (see `InterpreterCache::decoded_image_decodes`), for tests.
     pub fn decoded_image_decodes(&self) -> usize {
         self.interpreter_cache.decoded_image_decodes()

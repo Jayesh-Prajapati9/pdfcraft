@@ -47,7 +47,7 @@ path = "src/lib.rs"
 name = "extract_html"
 path = "examples/extract_html.rs"
 
-# PdfCraft patch (52): the upstream `extract_images` example is removed with the `image`
+# PdfCraft patch (54): the upstream `extract_images` example is removed with the `image`
 # dev-dependency it alone used (see below).
 
 [dependencies.bitflags]
@@ -97,7 +97,7 @@ version = "1"
 version = "0.8"
 features = ["derive"]
 
-# PdfCraft patch (52): the upstream `[dev-dependencies.image]` entry is removed (no test here
+# PdfCraft patch (54): the upstream `[dev-dependencies.image]` entry is removed (no test here
 # uses it), so `cargo test -p hayro-interpret` can run this crate's unit tests, as for hayro.
 
 [lints.clippy]
