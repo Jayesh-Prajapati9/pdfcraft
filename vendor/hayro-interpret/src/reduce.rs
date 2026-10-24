@@ -1,4 +1,4 @@
-//! PdfCraft patch (52): images too large to decode at their full size are decoded at a reduced
+//! PdfCraft patch (54): images too large to decode at their full size are decoded at a reduced
 //! one.
 //!
 //! An image over [`MAX_FULL_PIXELS`] (a 36 × 24 in plan scanned at 600 dpi is 311 million) was

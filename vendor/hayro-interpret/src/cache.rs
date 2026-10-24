@@ -107,9 +107,9 @@ pub(crate) struct DecodedImageKey {
     pub(crate) interpolate: bool,
     pub(crate) default_space: Option<u128>,
     pub(crate) target: Option<(u32, u32)>,
-    /// PdfCraft patch (52): the factors an image too large for its full size is reduced by.
+    /// PdfCraft patch (54): the factors an image too large for its full size is reduced by.
     pub(crate) reduction: Option<(u32, u32)>,
-    /// PdfCraft patch (52): the same for the `/SMask` or `/Mask` stream decoded with the image.
+    /// PdfCraft patch (54): the same for the `/SMask` or `/Mask` stream decoded with the image.
     pub(crate) mask_reduction: Option<(u32, u32)>,
     pub(crate) preview: bool,
 }

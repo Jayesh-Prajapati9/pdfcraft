@@ -25,7 +25,7 @@ pub(crate) fn decode(
         .get::<u32>(ROWS)
         .filter(|&rows| rows != 0)
         .map_or(image_params.height, |rows| rows.max(image_params.height));
-    // PdfCraft patch (hayro-interpret 52): nor are more rows decoded than the image's `/Height`:
+    // PdfCraft patch (hayro-interpret 54): nor are more rows decoded than the image's `/Height`:
     // rows past it are never drawn, and a 1-pixel-wide image with `/Rows 1073741824` took a byte
     // a row in its packed output, 1 GiB.
     let rows = if image_params.height == 0 {
@@ -59,13 +59,13 @@ pub(crate) fn decode(
     // Whenever possible (if we don't have an indexed color space), we convert
     // the data as 8-bit instead of 1-bit, so that it can be easier converted
     // into an RGBA8 image.
-    // PdfCraft patch (hayro-interpret 52): an image over 2^28 pixels stays 1-bit: hayro-interpret
+    // PdfCraft patch (hayro-interpret 54): an image over 2^28 pixels stays 1-bit: hayro-interpret
     // reduces it from its packed samples, and a byte per pixel took 311 MB for a 21600 × 14400
     // scan (#4071).
     let packed = image_params.is_indexed
         || u64::from(settings.columns) * u64::from(settings.rows) > super::MAX_FULL_IMAGE_PIXELS;
 
-    // PdfCraft patch (hayro-interpret 52): refuse a packed image whose samples (a row is
+    // PdfCraft patch (hayro-interpret 54): refuse a packed image whose samples (a row is
     // `/Columns` bits, rounded up to a byte) would pass the 512 MiB hayro-interpret reduces from
     // at most: a 1 × 2^30 image is 1 GiB packed. A drawn image is not checked against the decode
     // limit, which comes from `/Width`: hayro-interpret draws a `/Columns` that differs from it,

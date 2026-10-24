@@ -38,7 +38,7 @@ mod device;
 mod function;
 mod interpret;
 mod ocg;
-// PdfCraft patch (52): reduced decodes of images too large for their full size.
+// PdfCraft patch (54): reduced decodes of images too large for their full size.
 mod reduce;
 mod soft_mask;
 mod types;

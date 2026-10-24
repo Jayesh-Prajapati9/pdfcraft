@@ -37,7 +37,7 @@ impl<'a, 'b> StencilImage<'a, 'b> {
     /// the image decoder to extract a lower-resolution version of the image in
     /// certain cases.
     ///
-    /// PdfCraft patch (52): an image over 2^28 pixels is always handed over reduced (for the
+    /// PdfCraft patch (54): an image over 2^28 pixels is always handed over reduced (for the
     /// hint if given, else within a fixed budget), so callers must honour its `scale_factors`.
     pub fn with_stencil(
         &self,
@@ -80,7 +80,7 @@ impl RasterImage<'_> {
     /// the image decoder to extract a lower-resolution version of the image in
     /// certain cases.
     ///
-    /// PdfCraft patch (52): an image over 2^28 pixels is always handed over reduced (for the
+    /// PdfCraft patch (54): an image over 2^28 pixels is always handed over reduced (for the
     /// hint if given, else within a fixed budget), so callers must honour its `scale_factors`.
     pub fn with_rgba(
         &self,

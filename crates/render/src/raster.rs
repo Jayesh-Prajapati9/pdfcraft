@@ -4245,7 +4245,7 @@ endstream endobj
     /// #4071: a 1-bit scan of a large-format drawing (a 36 × 24 in plan at 600 dpi is 21600 ×
     /// 14400, 311 million pixels) rendered blank with no warning: images over 2^28 pixels were
     /// not decoded. They are now decoded reduced for the size they are drawn at (vendored
-    /// hayro-interpret patch 52). 16385 × 16384 is the first size past the limit. Each image is
+    /// hayro-interpret patch 54). 16385 × 16384 is the first size past the limit. Each image is
     /// dark on its left half and white on its right, so a blank, mirrored or misplaced image
     /// fails; as a stencil mask (black where its samples are 0) it paints the same.
     #[test]
